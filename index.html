@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<title>Interpretação Radiográfica</title>
+<link href="style.css" rel="stylesheet"/>
+<style>
+    #addImageBtn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .tool-button {
+      background: #f0f0f0;
+      color: black;
+      border: 2px solid black;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 2px 2px 5px #aaa;
+      transition: transform 0.2s, background-color 0.3s;
+    }
+
+    .tool-button:hover {
+      transform: scale(1.1);
+      background-color: #e0e0e0;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    #radiografia {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      cursor: crosshair;
+    }
+  </style>
+<style>
+#achadosContent > div {
+  font-family: 'Trebuchet MS', sans-serif;
+  
+  
+}
+#hipoteseContent {
+  font-family: 'Trebuchet MS', sans-serif !important;
+}
+</style><style>
+#achadosContent {
+  overflow-x: hidden !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+</style><style>
+#achadosContent {
+  overflow-x: hidden !important;
+  overflow: hidden !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+</style></head>
+<body><div id="canvas-container"></div>
+<div style="text-align:center; margin-top: 10px;">
+
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+  <span style="font-family: Impact, sans-serif; font-weight: bold; font-size: 36px;">iRad</span>
+  <span style="font-family: 'Roboto Condensed', sans-serif; font-weight: bold; font-size: 28px;">Viewer</span>
+  <div style="font-family: Arial, sans-serif; font-size: 14px; margin-top: 4px;">
+    Desenvolvido por Paulo de Tarso S. de Macedo, DDS, PhD
+  </div>
+</div>
+
+<div class="container">
+<div class="column" id="col-esquerda">
+<div class="titulo">Imagem Radiográfica</div>
+<div class="toolbar">
+<button class="tool-button" onclick="setTool('line')">📏</button>
+<button class="tool-button" onclick="setTool('free')">✏️</button>
+<button class="tool-button" onclick="setTool('arrow')">➡️</button>
+<button class="tool-button" onclick="setTool('text')">🅰️</button>
+<button id="limparCanvasBtn" style="background:white; border:2px solid black; padding:10px; border-radius:8px; font-size:18px; font-weight:bold; cursor:pointer; margin-left:6px;">🧹</button><button id="inverterBtn" style="background:white; border:2px solid black; padding:10px 16px; border-radius:8px; font-size:18px; font-weight:bold; cursor:pointer; margin-left:80px;">⬛⬜</button></div>
+<div class="canvas-wrapper">
+<img alt="Imagem Radiográfica" id="radiografia" src=""/>
+<canvas id="canvas"></canvas>
+</div><button id="negatoscopioBtn" onclick="abrirNegatoscopio()" style="margin-top: 20px; background-color: black; color: white; font-weight: bold; border: 3px solid white; padding: 20px 30px; font-size: 28px; border-radius: 16px; cursor: pointer;">🖥️</button>
+<input accept="image/*" id="imageInput" style="display:none;" type="file"/>
+<div style="text-align:center;"><div id="filtros-container" style="text-align:center; margin-top: 20px; padding: 10px;"><div style="background-color: #222; padding: 8px 12px; border-radius: 6px; display: inline-block; margin: 6px;"><label style="color:white; font-size: 14px; font-weight:bold;">Nitidez: <input id="sharpSlider" max="5" min="0" style="width: 120px; vertical-align: middle;" type="range" value="0"/></label></div><div style="background-color: #222; padding: 8px 12px; border-radius: 6px; display: inline-block; margin: 6px;"><label style="color:white; font-size: 14px; font-weight:bold;">Brilho: <input id="brilhoSlider" max="200" min="0" style="width: 120px; vertical-align: middle;" type="range" value="100"/></label></div><div style="background-color: #222; padding: 8px 12px; border-radius: 6px; display: inline-block; margin: 6px;"><label style="color:white; font-size: 14px; font-weight:bold;">Contraste: <input id="contrasteSlider" max="200" min="0" style="width: 120px; vertical-align: middle;" type="range" value="100"/></label></div></div>
+<button id="addImageBtn" onclick="document.getElementById('imageInput').click()">Adicionar Imagem</button>
+</div>
+<div class="titulo">Impressão Diagnóstica</div>
+<div class="editable-text" id="hipotese">
+<div class="controls" style="margin-bottom: 5px;">
+<button onclick="document.execCommand('bold', false, '');"><b>B</b></button>
+<button onclick="document.execCommand('italic', false, '');"><i>I</i></button>
+<button onclick="document.execCommand('underline', false, '');"><u>U</u></button>
+<select onchange="document.execCommand('fontName', false, this.value);">
+<option value="Arial">Arial</option>
+<option value="Times New Roman">Times</option>
+<option value="Courier New">Courier</option>
+</select>
+<input onchange="document.execCommand('foreColor', false, this.value);" type="color"/>
+</div>
+<div contenteditable="true" id="hipoteseContent" style="width: 100%; min-height: 120px; border: 1px solid #ccc; padding: 10px; background: white; border-radius: 5px;font-family: 'Trebuchet MS', sans-serif;"></div>
+</div>
+</div>
+<div class="column" id="col-direita">
+<div class="titulo">Achados Radiográficos</div>
+<div class="editable-text" id="achados">
+<div class="controls" style="margin-bottom: 5px;">
+<button onclick="document.execCommand('bold', false, '');"><b>B</b></button>
+<button onclick="document.execCommand('italic', false, '');"><i>I</i></button>
+<button onclick="document.execCommand('underline', false, '');"><u>U</u></button>
+<select onchange="document.execCommand('fontName', false, this.value);">
+<option value="Arial">Arial</option>
+<option value="Times New Roman">Times</option>
+<option value="Courier New">Courier</option>
+</select>
+<input onchange="document.execCommand('foreColor', false, this.value);" type="color"/>
+<button onclick="document.execCommand('insertHTML', false, '✅ ');">✅</button>
+</div>
+<div contenteditable="true" id="achadosContent" style="width: 100%; min-height: 150px; border: 1px solid #ccc; padding: 10px; background: white; border-radius: 5px;font-family: 'Trebuchet MS', sans-serif;"><div style="display: block; max-width: 100%; overflow-wrap: break-word; white-space: pre-wrap;">✅ <span contenteditable="true"></span></div></div></div>
+</div>
+</div>
+
+<script>
+    const input = document.getElementById("imageInput");
+    const img = document.getElementById("radiografia");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let tool = "line";
+    let drawing = false;
+    let startX, startY;
+
+    // Fator de conversão: assume 1px = 0.1mm (exemplo típico, ajustar conforme DPI real da imagem)
+    const pixelToMM = 0.1;
+
+    input.addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+          };
+          img.src = evt.target.result;
+          img.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function setTool(selected) {
+      tool = selected;
+    }
+
+    canvas.addEventListener("mousedown", (e) => {
+      drawing = true;
+      const rect = canvas.getBoundingClientRect();
+      startX = e.clientX - rect.left;
+      startY = e.clientY - rect.top;
+      if (tool === "text") {
+        const text = prompt("Digite o texto:");
+        if (text) {
+          ctx.fillStyle = "white";
+          ctx.font = "16px Arial";
+          ctx.shadowColor = "black";
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 1;
+          ctx.shadowBlur = 2;
+          ctx.fillText(text, startX, startY);
+          ctx.shadowColor = "transparent";
+        }
+        drawing = false;
+      }
+    });
+
+    canvas.addEventListener("mouseup", (e) => {
+      if (!drawing) return;
+      drawing = false;
+      const rect = canvas.getBoundingClientRect();
+      const endX = e.clientX - rect.left;
+      const endY = e.clientY - rect.top;
+      if (tool === "line") {
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        const distPx = Math.hypot(endX - startX, endY - startY);
+        const distMM = (distPx * pixelToMM).toFixed(1);
+        ctx.fillStyle = "red";
+        ctx.font = "14px Arial";
+        ctx.fillText(`${distMM} mm`, (startX + endX) / 2 + 5, (startY + endY) / 2 - 5);
+        // linhas perpendiculares nas extremidades
+        const angle = Math.atan2(endY - startY, endX - startX);
+        const offset = 5;
+        ctx.beginPath();
+        ctx.moveTo(startX - offset * Math.sin(angle), startY + offset * Math.cos(angle));
+        ctx.lineTo(startX + offset * Math.sin(angle), startY - offset * Math.cos(angle));
+        ctx.moveTo(endX - offset * Math.sin(angle), endY + offset * Math.cos(angle));
+        ctx.lineTo(endX + offset * Math.sin(angle), endY - offset * Math.cos(angle));
+        ctx.stroke();
+      } else if (tool === "arrow") {
+        ctx.strokeStyle = "yellow";
+        ctx.lineWidth = 3;
+        const headlen = 10;
+        const angle = Math.atan2(endY - startY, endX - startX);
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.lineTo(endX - headlen * Math.cos(angle - Math.PI / 6), endY - headlen * Math.sin(angle - Math.PI / 6));
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(endX - headlen * Math.cos(angle + Math.PI / 6), endY - headlen * Math.sin(angle + Math.PI / 6));
+        ctx.stroke();
+      }
+    });
+
+    canvas.addEventListener("mousemove", (e) => {
+      if (!drawing || tool !== "free") return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "#00ff66"; // verde claro mais intenso
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    });
+
+    canvas.addEventListener("mousedown", () => {
+      if (tool === "free") ctx.beginPath();
+    });
+  </script>
+<script>
+const sharpSlider = document.getElementById("sharpSlider");
+const brilhoSlider = document.getElementById("brilhoSlider");
+const contrasteSlider = document.getElementById("contrasteSlider");
+
+[sharpSlider, brilhoSlider, contrasteSlider].forEach(slider => {
+  slider.addEventListener("input", aplicarFiltrosCSSLike);
+});
+
+function aplicarFiltrosCSSLike() {
+  if (!img.src) return;
+
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let data = imageData.data;
+
+  const brilho = parseInt(brilhoSlider.value) / 100;
+  const contraste = parseInt(contrasteSlider.value) / 100;
+  const sharp = parseInt(sharpSlider.value);
+
+  // Leve ampliação: efeito moderado de nitidez
+  const sharpBrilho = 1 + (sharp * 0.03);       // até +300%
+  const sharpContraste = 1 + (sharp * 0.04);    // até +400%
+
+  for (let i = 0; i < data.length; i += 4) {
+    let r = ((data[i] - 128) * contraste * sharpContraste + 128) * brilho * sharpBrilho;
+    let g = ((data[i + 1] - 128) * contraste * sharpContraste + 128) * brilho * sharpBrilho;
+    let b = ((data[i + 2] - 128) * contraste * sharpContraste + 128) * brilho * sharpBrilho;
+    data[i] = truncate(r);
+    data[i + 1] = truncate(g);
+    data[i + 2] = truncate(b);
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
+
+function truncate(val) {
+  return Math.max(0, Math.min(255, val));
+}
+</script><script>
+document.getElementById("limparCanvasBtn").addEventListener("click", () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (img && img.src) {
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  }
+});
+
+document.getElementById("inverterBtn").addEventListener("click", () => {
+  if (!img.src) return;
+  let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let data = imageData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    data[i] = 255 - data[i];
+    data[i + 1] = 255 - data[i + 1];
+    data[i + 2] = 255 - data[i + 2];
+  }
+  ctx.putImageData(imageData, 0, 0);
+});
+</script><div id="fullscreenOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:black; z-index:9999; justify-content:center; align-items:center;">
+<div id="fullscreen-tools" style="position: absolute; top: 80px; left: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 10000;">
+<button onclick="setToolFS('line')" title="Linha">📏</button>
+<button onclick="setToolFS('free')" title="Livre">✏️</button>
+<button onclick="setToolFS('arrow')" title="Seta">➡️</button>
+<button onclick="setToolFS('text')" title="Texto">🅰️</button>
+</div>
+<canvas id="fullscreenCanvas" style="width: 100vw; height: 100vh; object-fit: contain; background-color: black;"></canvas><button id="fecharBtn" style="position:absolute; top:20px; right:20px; padding:8px 16px; background:white; color:black; font-weight:bold; border-radius:6px; border:none; font-size:16px; cursor:pointer;">Fechar</button>
+<div id="slidersFullscreen" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); padding: 12px; border-radius: 10px; display: flex; gap: 12px;">
+<label style="color:white;">Nitidez: <input id="sharpSliderFS" max="10" min="0" style="width:120px;" type="range" value="0"/></label>
+<label style="color:white;">Brilho: <input id="brilhoSliderFS" max="200" min="0" style="width:120px;" type="range" value="100"/></label>
+<label style="color:white;">Contraste: <input id="contrasteSliderFS" max="200" min="0" style="width:120px;" type="range" value="100"/></label>
+</div>
+</div><script>
+const fullscreenBtn = document.getElementById("negatoscopioBtn");
+const fecharBtn = document.getElementById("fecharBtn");
+const overlay = document.getElementById("fullscreenOverlay");
+const canvasFS = document.getElementById("fullscreenCanvas");
+const ctxFS = canvasFS.getContext("2d");
+
+function abrirNegatoscopio() {
+  if (!img.src) return;
+  canvasFS.width = canvas.width;
+  canvasFS.height = canvas.height;
+  ctxFS.drawImage(canvas, 0, 0); // Copia canvas com filtros e anotações
+  overlay.style.display = "flex";
+}
+
+fecharBtn.addEventListener("click", () => {
+  overlay.style.display = "none";
+});
+
+const slidersFS = {
+  sharp: document.getElementById("sharpSliderFS"),
+  brilho: document.getElementById("brilhoSliderFS"),
+  contraste: document.getElementById("contrasteSliderFS")
+};
+
+Object.values(slidersFS).forEach(slider => {
+  slider.addEventListener("input", aplicarFiltrosFullscreen);
+});
+
+function aplicarFiltrosFullscreen() {
+  if (!img.src) return;
+  ctxFS.drawImage(img, 0, 0, canvasFS.width, canvasFS.height);
+  let imageData = ctxFS.getImageData(0, 0, canvasFS.width, canvasFS.height);
+  let data = imageData.data;
+  const brilho = parseInt(slidersFS.brilho.value) / 100;
+  const contraste = parseInt(slidersFS.contraste.value) / 100;
+  const sharp = parseInt(slidersFS.sharp.value);
+  const sharpBrilho = 1 + (sharp * 0.03);
+  const sharpContraste = 1 + (sharp * 0.04);
+  for (let i = 0; i < data.length; i += 4) {
+    let r = ((data[i] - 128) * contraste * sharpContraste + 128) * brilho * sharpBrilho;
+    let g = ((data[i + 1] - 128) * contraste * sharpContraste + 128) * brilho * sharpBrilho;
+    let b = ((data[i + 2] - 128) * contraste * sharpContraste + 128) * brilho * sharpBrilho;
+    data[i] = truncate(r);
+    data[i + 1] = truncate(g);
+    data[i + 2] = truncate(b);
+  }
+  ctxFS.putImageData(imageData, 0, 0);
+}
+</script><script>
+let toolFS = "line";
+let drawingFS = false;
+let startXFS, startYFS;
+
+function setToolFS(selected) {
+  toolFS = selected;
+}
+
+function getCanvasCoordsFS(e) {
+  const rect = canvasFS.getBoundingClientRect();
+  const scaleX = canvasFS.width / rect.width;
+  const scaleY = canvasFS.height / rect.height;
+  return {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY
+  };
+}
+
+canvasFS.addEventListener("mousedown", (e) => {
+  const { x, y } = getCanvasCoordsFS(e);
+  drawingFS = true;
+  startXFS = x;
+  startYFS = y;
+  if (toolFS === "text") {
+    const text = prompt("Digite o texto:");
+    if (text) {
+      ctxFS.fillStyle = "white";
+      ctxFS.font = "16px Arial";
+      ctxFS.shadowColor = "black";
+      ctxFS.shadowOffsetX = 1;
+      ctxFS.shadowOffsetY = 1;
+      ctxFS.shadowBlur = 2;
+      ctxFS.fillText(text, x, y);
+      ctxFS.shadowColor = "transparent";
+    }
+    drawingFS = false;
+  }
+  if (toolFS === "free") {
+    ctxFS.beginPath();
+    ctxFS.moveTo(x, y);
+  }
+});
+
+canvasFS.addEventListener("mouseup", (e) => {
+  if (!drawingFS) return;
+  drawingFS = false;
+  const { x: endX, y: endY } = getCanvasCoordsFS(e);
+  if (toolFS === "line") {
+    ctxFS.strokeStyle = "red";
+    ctxFS.lineWidth = 2;
+    ctxFS.beginPath();
+    ctxFS.moveTo(startXFS, startYFS);
+    ctxFS.lineTo(endX, endY);
+    ctxFS.stroke();
+  } else if (toolFS === "arrow") {
+    ctxFS.strokeStyle = "yellow";
+    ctxFS.lineWidth = 3;
+    const headlen = 10;
+    const angle = Math.atan2(endY - startYFS, endX - startXFS);
+    ctxFS.beginPath();
+    ctxFS.moveTo(startXFS, startYFS);
+    ctxFS.lineTo(endX, endY);
+    ctxFS.lineTo(endX - headlen * Math.cos(angle - Math.PI / 6), endY - headlen * Math.sin(angle - Math.PI / 6));
+    ctxFS.moveTo(endX, endY);
+    ctxFS.lineTo(endX - headlen * Math.cos(angle + Math.PI / 6), endY - headlen * Math.sin(angle + Math.PI / 6));
+    ctxFS.stroke();
+  }
+});
+
+canvasFS.addEventListener("mousemove", (e) => {
+  if (!drawingFS || toolFS !== "free") return;
+  const { x, y } = getCanvasCoordsFS(e);
+  ctxFS.lineWidth = 1;
+  ctxFS.strokeStyle = "#00ff66";
+  ctxFS.lineTo(x, y);
+  ctxFS.stroke();
+});
+</script><script>
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement && canvasFS && canvas) {
+    const image = new Image();
+    image.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    };
+    image.src = canvasFS.toDataURL("image/png");
+  }
+});
+</script><script>
+document.addEventListener("DOMContentLoaded", function () {
+  const achadosField = document.getElementById("achadosContent");
+  if (achadosField) {
+    achadosField.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const newBullet = document.createElement("div");
+        newBullet.innerHTML = '✅ <span contenteditable="true"></span>';
+        achadosField.appendChild(newBullet);
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.setStart(newBullet.querySelector("span"), 0);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    });
+  }
+});
+</script>
+<button id="exportarPDF" style="margin-top: 20px; padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer;">Exportar Laudo</button>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+document.getElementById("exportarPDF").addEventListener("click", async () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("p", "mm", "a4");
+
+    const radiografia = document.getElementById("canvas");
+    const achadosRaw = document.getElementById("achadosContent")?.innerText || "";
+    const impressao = document.getElementById("hipoteseContent")?.innerText || "";
+
+    // CABEÇALHO
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(0, 0, 0);
+    doc.text("LAUDO RADIOGRÁFICO", 105, 15, { align: "center" });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(0, 51, 102);
+    doc.text("Dr. Paulo de Tarso S. de Macedo", 105, 22, { align: "center" });
+    doc.text("Radiologia Oral e Maxilofacial", 105, 27, { align: "center" });
+    doc.text("CRO-PI 2751", 105, 32, { align: "center" });
+
+    doc.setDrawColor(0);
+    doc.line(10, 35, 200, 35);
+
+    // IMAGEM
+    const canvasImage = await html2canvas(radiografia);
+    const imgData = canvasImage.toDataURL("image/png");
+    doc.addImage(imgData, "PNG", 10, 38, 190, 90);
+
+    // ACHADOS
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Achados Radiográficos:", 10, 135);
+
+    const achadosLines = achadosRaw
+        .split("\n")
+        .map(line => line.replace(/^[^\w]+/, "").trim())  // Remove tudo que não é letra ou número do início
+        .filter(line => line.length > 0)
+        .map(line => "• " + line);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(achadosLines, 10, 143);
+
+    const yStart = 143 + achadosLines.length * 6;
+
+    // IMPRESSÃO
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(200, 0, 0);
+    doc.text("Impressão Diagnóstica:", 10, yStart + 10);
+
+    doc.setFillColor(220, 235, 255);
+    doc.roundedRect(10, yStart + 15, 190, 20, 5, 5, 'F');
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    const impressaoLines = doc.splitTextToSize(impressao, 180);
+    doc.text(impressaoLines, 15, yStart + 25);
+
+    doc.save("laudo_radiografico.pdf");
+});
+</script></body>
+</html>
